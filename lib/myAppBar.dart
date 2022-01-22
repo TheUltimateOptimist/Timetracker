@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 class MyAppBar extends AppBar {
-  MyAppBar({Key? key, String title = "Timetracker", String? subTitle})
+  MyAppBar(
+      {Key? key,
+      String title = "Timetracker",
+      String? subTitle,
+      bool showActivityIcon = false,
+      Function()? onActivityIconPressed})
       : super(
           key: key,
           backgroundColor: Color(0xff283618),
@@ -10,6 +15,18 @@ class MyAppBar extends AppBar {
             title: title,
             subTitle: subTitle,
           ),
+          actions: showActivityIcon
+              ? [
+                  IconButton(
+                    icon: Icon(
+                      Icons.touch_app,
+                      size: 25,
+                      color: Colors.white,
+                    ),
+                    onPressed: onActivityIconPressed,
+                  ),
+                ]
+              : null,
         );
 }
 
@@ -22,10 +39,14 @@ class Title extends StatelessWidget {
     if (subTitle == null) {
       return mainText();
     } else {
-      return Column(crossAxisAlignment: CrossAxisAlignment.start,
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           mainText(),
-          Container(margin: EdgeInsets.only(top: 5,),
+          Container(
+            margin: EdgeInsets.only(
+              top: 5,
+            ),
             child: Text(
               subTitle!,
               style: TextStyle(

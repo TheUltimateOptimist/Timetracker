@@ -12,8 +12,8 @@ void initialize(){
   activitysCollection = firestore.collection("activitys");
 }
 
-void insertEntry(String id, DateTime start, int duration) async{
-  await activitysCollection.doc(id).collection("entrys").doc().set({"start": start.millisecondsSinceEpoch, "duration": duration});
+Future<void> insertEntry(String id, int start, int duration) async{
+  await activitysCollection.doc(id).collection("entrys").doc().set({"start": start, "duration": duration});
 }
 
 Future<String> insertActivity(String name, Activity originActivity) async{
@@ -72,7 +72,7 @@ Future<List<Map<String, int>>> getEntrys(String id, DateTime timeBorder) async{
   for(String docId in relevantDocIds){
     var entryDocs = (await activitysCollection.doc(docId).collection("entrys").where("start", isGreaterThanOrEqualTo: timeBorder.millisecondsSinceEpoch).get()).docs;
     for(var doc in entryDocs){
-      var docData = doc.data() as Map<String, int>;
+      var docData = doc.data();
       entrys.add({"start": docData["start"]!, "duration": docData["duration"]!});
     }
   }

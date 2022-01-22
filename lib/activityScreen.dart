@@ -5,8 +5,9 @@ import 'package:time/myAppBar.dart';
 import 'converter.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({Key? key, required this.activity}) : super(key: key);
+  const ActivityScreen({Key? key, required this.activity, required this.subTitle}) : super(key: key);
   final Activity activity;
+  final String subTitle;
   @override
   _ActivityScreenState createState() => _ActivityScreenState();
 }
@@ -22,7 +23,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         Duration(
           seconds: 1,
         ), (t) {
-      if (icon == Icons.stop) {
+      if (widget.activity.isRunning) {
         setState(() {
           centerText = Converter.toMyTime(widget.activity.getTimeEllapsed());
         });
@@ -36,17 +37,17 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return Scaffold(
       backgroundColor: Color(0xfffefae0),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            if(icon == Icons.play_arrow_rounded){
+        onPressed: () async{
+          if(!widget.activity.isRunning){
               widget.activity.start();
               icon = Icons.stop;
             }
             else{
-              widget.activity.stop();
+              await widget.activity.stop();
               centerText = "";
               icon = Icons.play_arrow_rounded;
             }
+          setState(() {
           });
         },
         backgroundColor: Color(
@@ -62,6 +63,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       ),
       appBar: MyAppBar(
         title: widget.activity.title,
+        subTitle: widget.subTitle,
       ),
       body: Stack(
         children: [

@@ -1,4 +1,6 @@
 import 'package:time/database.dart';
+import 'package:time/functions.dart';
+import 'package:time/userPreferences.dart';
 
 class Activity{
   late String _id;
@@ -7,12 +9,15 @@ class Activity{
   List<Map<String, int>> _entrys = [];
   DateTime? _timeBorder;
   late String _title;
+  late bool _isRunning;
+  int? _start;
 
   Activity({required String id, required String title, required List<String> ancestorIds, required List<Map<String, String>> children}){
     _id = id;
     _title = title;
     _ancestorIds = ancestorIds;
     _children = children;
+    _isRunning = false;
   }
 
   String get title{
@@ -38,6 +43,10 @@ class Activity{
     return _ancestorIds;
   }
 
+  bool get isRunning{
+    return _isRunning;
+  }
+
 Future<int> getDuration(final int days, {final bool isExact = false}) async{
     final DateTime now = DateTime.now();
     final DateTime startDate = now.subtract(Duration(days: days));
@@ -48,7 +57,10 @@ Future<int> getDuration(final int days, {final bool isExact = false}) async{
    await _queryEntrys(newTimeBorder: timeBorder);
    int duration = 0;
    for(Map<String,int> entry in _entrys){
-     if(entry["start"]! > timeBorder.millisecondsSinceEpoch){
+     if(oneDayOnly && isSameDay(timeBorder, DateTime.now(),)){
+       duration+=entry["duration"]!;
+     }
+     else if(!oneDayOnly && entry["start"]! > timeBorder.millisecondsSinceEpoch){
        duration+=entry["duration"]!;
      }
    }
@@ -85,14 +97,21 @@ Future<int> getDuration(final int days, {final bool isExact = false}) async{
   }
 
   void start(){
-
+    int startTime = DateTime.now().millisecondsSinceEpoch;
+    _start = startTime;
+    _isRunning = true;
+    UserPreferences().isActivityRunning = true;
+    UserPreferences().activityStart = startTime;
   }
 
-  void stop(){
-
+  Future<void> stop() async{
+    _isRunning = false;
+    UserPreferences().isActivityRunning = false;
+    await DataBase().insertEntry(_id, _start!, getTimeEllapsed());
+    _entrys.add({"start": _start!, "duration": getTimeEllapsed()});
   }
 
   int getTimeEllapsed(){
-    return 1000;
+    return ((DateTime.now().millisecondsSinceEpoch - _start!)/1000).floor();
   }
 }
