@@ -2,7 +2,8 @@
     package="com.jonathan.time">
    <application
         android:label="time"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:name="${applicationName}">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

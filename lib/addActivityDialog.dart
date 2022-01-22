@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-
-import 'activity.dart';
 import 'dialogButton.dart';
 import 'dialogInputField.dart';
+import 'activity.dart';
 
 class AddActivityDialog extends StatelessWidget {
-  AddActivityDialog({required this.activitys});
-  final Activitys activitys;
+  AddActivityDialog({required this.activity});
+  final Activity activity;
   final TextEditingController titleEditingController =
       new TextEditingController();
 
@@ -26,8 +25,10 @@ class AddActivityDialog extends StatelessWidget {
         inputEditingController: titleEditingController,
       ),
       actions: [
-        DialogButton(title: "Save", onPressed: () {
-          activitys.add(titleEditingController.text, 0, 0);
+        DialogButton(title: "Save", onPressed: () async{
+          await activity.addActivity(titleEditingController.text);
+          print("2");
+          print(activity.children);
           Navigator.pop(context);
         }),
       ],

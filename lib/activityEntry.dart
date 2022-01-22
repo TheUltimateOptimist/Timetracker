@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:time/activityScreen.dart';
-
-import 'activity.dart';
 
 class ActivityEntry extends StatelessWidget {
-  const ActivityEntry({Key? key, required this.activity}) : super(key: key);
-  final Activity activity;
+  const ActivityEntry({Key? key, required this.name, required this.onDelete, required this.onTap}) : super(key: key);
+  final String name;
+  final Function() onDelete;
+  final Function() onTap;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(onTap: (){Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ActivityScreen(activity: activity),
-            ),
-          );},
+    return ListTile(onTap: onTap,
       title: Text(
-        activity.title,
+        name,
         style: TextStyle(
           color: Color(
             0xff283618,
@@ -32,8 +26,7 @@ class ActivityEntry extends StatelessWidget {
             0xff283618,
           ),
         ),
-        onPressed: () {
-        },
+        onPressed: onDelete,
       ),
     );
   }

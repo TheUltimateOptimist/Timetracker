@@ -1,8 +1,8 @@
 import 'dart:async';
-
+import 'activity.dart';
 import 'package:flutter/material.dart';
-import 'package:time/activity.dart';
 import 'package:time/myAppBar.dart';
+import 'converter.dart';
 
 class ActivityScreen extends StatefulWidget {
   const ActivityScreen({Key? key, required this.activity}) : super(key: key);
@@ -24,7 +24,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
         ), (t) {
       if (icon == Icons.stop) {
         setState(() {
-          centerText = widget.activity.getTimeEllapsed();
+          centerText = Converter.toMyTime(widget.activity.getTimeEllapsed());
         });
       }
     });
@@ -70,18 +70,26 @@ class _ActivityScreenState extends State<ActivityScreen> {
               left: 20,
               top: 20,
             ),
-            child: Column(
+            child: FutureBuilder(future: widget.activity.getDurationYesToday(), builder: (context, snapshot){
+              if(snapshot.connectionState == ConnectionState.done){
+                final data = snapshot.data as Map<String, int>;
+                return Column(
               children: [
                 DayDuration(
-                  duration: widget.activity.getTimeYesterday(),
+                  duration: Converter.toMyTime(data["durationYesterday"]!),
                   keyword: "Gestern: ",
                 ),
                 DayDuration(
-                  duration: widget.activity.getTimeToday(),
+                  duration: Converter.toMyTime(data["durationToday"]!),
                   keyword: "Heute:    ",
                 ),
               ],
-            ),
+            );
+              }
+              else{
+                return Text("Loading...");
+              }
+            },)
           ),
           Center(
             child: Container(
