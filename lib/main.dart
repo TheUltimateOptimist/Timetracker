@@ -18,6 +18,9 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   DataBase().initialize();
   root = await DataBase().getActivity("root");
+  var docs = (await DataBase().activitysCollection.where("children", isNull: true).get()).docs;
+  print(docs.length);
+  print("--><--");
   if(UserPreferences().isActivityRunning){
     runningActivity = await DataBase().getActivity(UserPreferences().runningActivityId);
     runningActivity!.isRunning = true;
