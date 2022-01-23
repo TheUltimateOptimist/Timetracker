@@ -1,19 +1,26 @@
 import 'dart:async';
+import 'package:time/main.dart';
+
 import 'activity.dart';
 import 'package:flutter/material.dart';
 import 'package:time/myAppBar.dart';
 import 'converter.dart';
 
 class ActivityScreen extends StatefulWidget {
-  const ActivityScreen({Key? key, required this.activity, required this.subTitle}) : super(key: key);
+  const ActivityScreen(
+      {Key? key,
+      required this.activity,
+      required this.subTitle,
+      this.isFirstPage = false})
+      : super(key: key);
   final Activity activity;
   final String subTitle;
+  final bool isFirstPage;
   @override
   _ActivityScreenState createState() => _ActivityScreenState();
 }
 
 class _ActivityScreenState extends State<ActivityScreen> {
-  IconData icon = Icons.play_arrow_rounded;
   late Timer t;
   String centerText = "";
 
@@ -37,24 +44,27 @@ class _ActivityScreenState extends State<ActivityScreen> {
     return Scaffold(
       backgroundColor: Color(0xfffefae0),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async{
-          if(!widget.activity.isRunning){
-              widget.activity.start();
-              icon = Icons.stop;
+        onPressed: () async {
+          if (widget.activity.isRunning) {
+            await widget.activity.stop();
+            if (widget.isFirstPage) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MyHomePage(activity: root),
+                ),
+              );
             }
-            else{
-              await widget.activity.stop();
-              centerText = "";
-              icon = Icons.play_arrow_rounded;
-            }
-          setState(() {
-          });
+          } else {
+            widget.activity.start();
+          }
+          setState(() {});
         },
         backgroundColor: Color(
           0xff283618,
         ),
         child: Icon(
-          icon,
+          widget.activity.isRunning ? Icons.stop : Icons.play_arrow_rounded,
           color: Color(
             0xffffffff,
           ),
@@ -68,31 +78,33 @@ class _ActivityScreenState extends State<ActivityScreen> {
       body: Stack(
         children: [
           Container(
-            margin: EdgeInsets.only(
-              left: 20,
-              top: 20,
-            ),
-            child: FutureBuilder(future: widget.activity.getDurationYesToday(), builder: (context, snapshot){
-              if(snapshot.connectionState == ConnectionState.done){
-                final data = snapshot.data as Map<String, int>;
-                return Column(
-              children: [
-                DayDuration(
-                  duration: Converter.toMyTime(data["durationYesterday"]!),
-                  keyword: "Gestern: ",
-                ),
-                DayDuration(
-                  duration: Converter.toMyTime(data["durationToday"]!),
-                  keyword: "Heute:    ",
-                ),
-              ],
-            );
-              }
-              else{
-                return Text("Loading...");
-              }
-            },)
-          ),
+              margin: EdgeInsets.only(
+                left: 20,
+                top: 20,
+              ),
+              child: FutureBuilder(
+                future: widget.activity.getDurationYesToday(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    final data = snapshot.data as Map<String, int>;
+                    return Column(
+                      children: [
+                        DayDuration(
+                          duration:
+                              Converter.toMyTime(data["durationYesterday"]!),
+                          keyword: "Gestern: ",
+                        ),
+                        DayDuration(
+                          duration: Converter.toMyTime(data["durationToday"]!),
+                          keyword: "Heute:    ",
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Text("Loading...");
+                  }
+                },
+              )),
           Center(
             child: Container(
               child: Text(

@@ -37,4 +37,12 @@ class UserPreferences {
     return start;
   }
 
+  set runningActivityId(String id){
+    _p.setString("runningActivityId", id);
+  }
+
+  String get runningActivityId{
+    return _p.getString("runningActivityId")!;
+  }
+
 }

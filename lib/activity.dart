@@ -47,6 +47,14 @@ class Activity{
     return _isRunning;
   }
 
+  set isRunning(bool isItRunning){
+    _isRunning = isItRunning;
+  }
+
+  set actStart(int start){
+    _start = start;
+  }
+
 Future<int> getDuration(final int days, {final bool isExact = false}) async{
     final DateTime now = DateTime.now();
     final DateTime startDate = now.subtract(Duration(days: days));
@@ -102,6 +110,7 @@ Future<int> getDuration(final int days, {final bool isExact = false}) async{
     _isRunning = true;
     UserPreferences().isActivityRunning = true;
     UserPreferences().activityStart = startTime;
+    UserPreferences().runningActivityId = _id;
   }
 
   Future<void> stop() async{

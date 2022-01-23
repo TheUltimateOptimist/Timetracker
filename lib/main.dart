@@ -11,12 +11,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 late Activity root;
+Activity? runningActivity;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   UserPreferences().init();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   DataBase().initialize();
   root = await DataBase().getActivity("root");
+  if(UserPreferences().isActivityRunning){
+    runningActivity = await DataBase().getActivity(UserPreferences().runningActivityId);
+    runningActivity!.isRunning = true;
+    runningActivity!.actStart = UserPreferences().activityStart;
+  }
   runApp(MyApp());
 }
 
@@ -25,8 +31,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: "/",
+      routes: {"/": (context)=>firstScreen()},
       title: 'Time',
-      home: MyHomePage(activity: root, key: ValueKey("root")),
     );
   }
 }
@@ -114,4 +121,11 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+}
+
+firstScreen(){
+  if(UserPreferences().isActivityRunning){
+    return ActivityScreen(activity: runningActivity!, subTitle: runningActivity!.title, isFirstPage: true,);
+  }
+  return MyHomePage(key: ValueKey("root"), activity: root);
 }
