@@ -40,7 +40,11 @@ class Activity{
   }
 
   List<String> get ancestorIds{
-    return _ancestorIds;
+    List<String> result = List.empty(growable: true);
+    for(String id in _ancestorIds){
+      result.add(id);
+    }
+    return result;
   }
 
   bool get isRunning{

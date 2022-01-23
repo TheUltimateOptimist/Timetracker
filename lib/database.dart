@@ -27,6 +27,8 @@ class DataBase {
   Future<String> insertActivity(String name, Activity originActivity) async {
     List<String> ancestorIds = originActivity.ancestorIds;
     ancestorIds.add(originActivity.id);
+    print("------------");
+    print(ancestorIds);
     final DocumentReference addedDoc = await activitysCollection
         .add({"name": name, "ancestorIds": ancestorIds, "children": null, "directAncestorId": originActivity.id});
     List<Map<String, String>> children = originActivity.children;
