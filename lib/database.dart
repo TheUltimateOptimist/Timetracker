@@ -4,7 +4,8 @@ import 'activity.dart';
 enum IdentificationType{
   directChild,
   indirectChild,
-  noChildren
+  noChildren,
+  atRoot
 }
 
 class DataBase {
@@ -20,17 +21,13 @@ class DataBase {
     entrysCollection = firestore.collection("entrys");
   }
 
-  Future<void> insertEntry(String id, int start, int duration) async {
-    await entrysCollection.add({"activityId": id, "start": start, "duration": duration});
+  Future<void> insertEntry(List<String> bindedIds, int start, int duration) async {
+    await entrysCollection.add({"activityIds": bindedIds, "start": start, "duration": duration});
   }
 
   Future<String> insertActivity(String name, Activity originActivity) async {
-    List<String> ancestorIds = originActivity.ancestorIds;
-    ancestorIds.add(originActivity.id);
-    print("------------");
-    print(ancestorIds);
     final DocumentReference addedDoc = await activitysCollection
-        .add({"name": name, "ancestorIds": ancestorIds, "children": null, "directAncestorId": originActivity.id});
+        .add({"name": name, "ancestorIds": originActivity.ancestorIds + [originActivity.id], "children": null, "directAncestorId": originActivity.id});
     List<Map<String, String>> children = originActivity.children;
     children.add({"name": name, "id": addedDoc.id});
     await activitysCollection
@@ -41,18 +38,20 @@ class DataBase {
 
   Future<void> removeActivity(String id) async {
     //rel... relevant
-    List<String> relIds = [id];
-    var relDocs = (await activitysCollection
+    List<String> relActIds = [id];
+    var relActDocs = (await activitysCollection
             .where("ancestorIds", arrayContains: id)
             .get())
         .docs;
-    for (var doc in relDocs) {
-      relIds.add(doc.id);
+    for (var doc in relActDocs) {
+      relActIds.add(doc.id);
     }
-    for (String relId in relIds) {
-      print(relId + "deleted");
+    for (String relId in relActIds) {
       await activitysCollection.doc(relId).delete();
-      await entrysCollection.doc(relId).delete();
+      var relEntryDocs = (await entrysCollection.where("activityIds", arrayContains: relId).get()).docs;
+      for(var relEntry in relEntryDocs){
+        entrysCollection.doc(relEntry.id).delete();
+      }
     }
   }
 
@@ -103,6 +102,10 @@ class DataBase {
         relDocs = (await activitysCollection.where("children", isNull: true).get()).docs;
       }
       break;
+      case IdentificationType.atRoot: {
+        relDocs = (await activitysCollection.where("directAncestorId", isEqualTo: "root").get()).docs;
+      }
+      break;
       default: relDocs = [];
     }
       for(var doc in relDocs){
@@ -114,32 +117,34 @@ class DataBase {
   Future<List<Map<String, int>>> getEntrys(
       String id, DateTime timeBorder) async {
     List<Map<String, int>> entrys = List.empty(growable: true);
-    List<String> relevantDocIds = [id];
-    var subDocs = (await activitysCollection
-            .where("ancestorIds", arrayContains: id)
-            .get())
-        .docs;
-    for (var doc in subDocs) {
-      relevantDocIds.add(doc.id);
-    }
-    for (String docId in relevantDocIds) {
-      var entryDocs = (await activitysCollection
-              .doc(docId)
-              .collection("entrys")
-              .where("start",
-                  isGreaterThanOrEqualTo: timeBorder.millisecondsSinceEpoch)
-              .get())
-          .docs;
+    var entryDocs = (await entrysCollection.where("activityIds", arrayContains: id).get()).docs;
+    print(entryDocs.length);
+    print(entryDocs);
       for (var doc in entryDocs) {
-        var docData = doc.data();
+        print(doc);
+        print(doc.data());
+        var docData = doc.data() as Map<String, dynamic>;
+        if(docData["start"]! > timeBorder.millisecondsSinceEpoch){
         entrys.add(
-            {"start": docData["start"]!, "duration": docData["duration"]!});
+            {"start": docData["start"]!, "duration": docData["duration"]!});}
       }
+      return entrys;
     }
-    return entrys;
-  }
 
+// Future<Map<String, int>> getCircleDiagrammData(IdentificationType identificationType, DateTime date, {bool isExact = true}) async{
+//   Map<String, int> result = {};
+//   late List<Map<String, String>> activitys; 
+//   if(identificationType == IdentificationType.atRoot){
+//     activitys = await getActivityGroup(identificationType);
+//   }
+//   else if(identificationType == IdentificationType.noChildren){
+//     activitys = await getActivityGroup(identificationType);
+//   }
+//   for(var activity in activitys){
+    
+//   }
 
+// }
 // Future<Map<String, int>> getDurations(int days, {bool isExact = false, int durationMinimum = 120, bool getMin = true}) async{
 //   Map<String, int> durations = {};
 //   List<QueryDocumentSnapshot<Object?>> docs;

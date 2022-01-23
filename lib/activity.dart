@@ -40,11 +40,7 @@ class Activity{
   }
 
   List<String> get ancestorIds{
-    List<String> result = List.empty(growable: true);
-    for(String id in _ancestorIds){
-      result.add(id);
-    }
-    return result;
+    return _ancestorIds;
   }
 
   bool get isRunning{
@@ -87,6 +83,8 @@ Future<int> getDuration(final int days, {final bool isExact = false}) async{
   }
 
   Future<void> addActivity(final String name) async{
+    print("2222");
+    print(_ancestorIds);
     await DataBase().insertActivity(name, this);
   }
 
@@ -120,7 +118,10 @@ Future<int> getDuration(final int days, {final bool isExact = false}) async{
   Future<void> stop() async{
     _isRunning = false;
     UserPreferences().isActivityRunning = false;
-    await DataBase().insertEntry(_id, _start!, getTimeEllapsed());
+    print(_ancestorIds);
+    print(_id);
+    print(_ancestorIds + [_id]);
+    await DataBase().insertEntry(_ancestorIds + [_id], _start!, getTimeEllapsed());
     _entrys.add({"start": _start!, "duration": getTimeEllapsed()});
   }
 
