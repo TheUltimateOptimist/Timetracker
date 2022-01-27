@@ -57,6 +57,7 @@ class Activity{
 
 Future<int> getDuration(final int days, {final bool isExact = false}) async{
     final DateTime now = DateTime.now();
+    print(now);
     final DateTime startDate = now.subtract(Duration(days: days));
     return await _getDuration(timeBorder: DateTime(startDate.year, startDate.month, startDate.day), oneDayOnly: isExact);
   }
@@ -65,7 +66,7 @@ Future<int> getDuration(final int days, {final bool isExact = false}) async{
    await _queryEntrys(newTimeBorder: timeBorder);
    int duration = 0;
    for(Map<String,int> entry in _entrys){
-     if(oneDayOnly && isSameDay(timeBorder, DateTime.now(),)){
+     if(oneDayOnly && isSameDay(DateTime.fromMillisecondsSinceEpoch(entry["start"]!), timeBorder,)){
        duration+=entry["duration"]!;
      }
      else if(!oneDayOnly && entry["start"]! > timeBorder.millisecondsSinceEpoch){
